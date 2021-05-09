@@ -3,8 +3,8 @@ install:
 	pip install -e .
 
 download-bosque:
-	git clone https://github.com/UniversalDependencies/UD_Portuguese-Bosque data/bosque
-	cd data/bosque && git switch workbench
+	git clone https://github.com/UniversalDependencies/UD_Portuguese-Bosque dante_parser/datasets/bosque
+	cd dante_parser/datasets/bosque && git switch workbench
 
 test:
 	pytest -s --pyargs dante_parser
