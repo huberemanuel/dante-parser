@@ -1,6 +1,9 @@
 import os
+from random import shuffle
 
 import dante_parser
+from dante_parser.data.conllu import read_conllu
+from dante_parser.data import sents_train_test_split
 
 
 def get_datasets():
@@ -11,15 +14,15 @@ def get_datasets():
     datasets = {
         "bosque": {
             "train": {
-                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-train.txt"),
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-train.conllu"),
                 "filetype": "conllu"
             },
             "dev": {
-                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-dev.txt"),
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-dev.conllu"),
                 "filetype": "conllu"
             },
             "test": {
-                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-test.txt"),
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-test.conllu"),
                 "filetype": "conllu"
             }
         },
@@ -29,9 +32,51 @@ def get_datasets():
                 "filetype": "csv"
             },
             "1a150": {
-                "path": os.path.join(base_path, "dante_01", "1a150.csv"),
+                "path": os.path.join(base_path, "dante_01", "1a150.conllu"),
                 "filetype": "conllu"
             }
         }
     }
     return datasets
+
+def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list):
+    """
+    Load datasets from names list, returning train, val and test sets.
+
+    Parameters
+    ----------
+    names: list
+        List of datasets to be loaded.
+
+    Returns
+    -------
+    (list, list, list):
+        Train, Val and Test sets.
+    """
+    datasets = get_datasets()
+    train_sents = []
+    val_sents   = []
+    test_sents  = []
+    for name in names:
+        if not name in datasets.keys():
+            raise ValueError(f"Dataset {name} not supported")
+
+        for set_name, set_value in datasets[name].items():
+            if set_name in ["val", "dev"]:
+                if set_value["filetype"] == "conllu":
+                    val_sents += read_conllu(set_value["path"])
+            elif set_name == "test":
+                if set_value["filetype"] == "conllu":
+                    test_sents += read_conllu(set_value["path"])
+            else:
+                if set_name == "train" and set_value["filetype"] == "conllu":
+                    train_sents += read_conllu(set_value["path"])
+                elif set_value["filetype"] == "conllu":
+                    train = read_conllu(set_value["path"])
+                    train, val = sents_train_test_split(train, random_state=random_state)
+                    train_sents += train
+                    val_sents += val
+    shuffle(train_sents)
+    shuffle(val_sents)
+            
+    return train_sents, val_sents, test_sents

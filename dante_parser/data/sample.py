@@ -35,3 +35,6 @@ def ids_sents_train_test_split(sent_ids: list, sent_texts: list, test_size: floa
 
     return train_ids, test_ids, train_texts, test_texts
 
+def sents_train_test_split(sent_texts: list, test_size: float=0.2, random_state: int=42):
+    train, test = train_test_split(sent_texts, test_size=test_size, random_state=random_state)
+    return train, test
