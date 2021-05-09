@@ -9,9 +9,18 @@ def get_datasets():
     base_path = os.path.join(base_path, "datasets")
     datasets = {
         "bosque": {
-            "train": os.path.join(base_path, "bosque", "pt_bosque-ud-train.txt"),
-            "dev": os.path.join(base_path, "bosque", "pt_bosque-ud-dev.txt"),
-            "test": os.path.join(base_path, "bosque", "pt_bosque-ud-test.txt"),
+            "train": {
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-train.txt"),
+                "filetype": "conllu"
+            },
+            "dev": {
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-dev.txt"),
+                "filetype": "conllu"
+            },
+            "test": {
+                "path": os.path.join(base_path, "bosque", "pt_bosque-ud-test.txt"),
+                "filetype": "conllu"
+            }
         }
     }
     return datasets
