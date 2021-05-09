@@ -18,7 +18,7 @@ udpipe-bind: $(PYTHON_INCLUDE) $(UDPIPE_LIB_PATH)
 	cd $(UDPIPE_LIB_PATH) && PYTHON_INCLUDE=$(PYTHON_INCLUDE) make
 
 udpipe-train: $(UDPIPE_LIB_PATH)
-	PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH)  python -m dante_parser.apps.train_udpipe
+	PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH)  python -m dante_parser.apps.train_udpipe --all_data
 
 test:
 	pytest -s --pyargs dante_parser

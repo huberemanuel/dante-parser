@@ -39,6 +39,35 @@ def get_datasets():
     }
     return datasets
 
+def load_data(names: list, random_state:int = 42) -> list:
+    """
+    Load datasets from names list, joining all sets avaiable into a single list.
+
+    Parameters
+    ----------
+    names: list
+        List of dataset names.
+    random_state: int
+        Random seed.
+
+    Returns
+    -------
+    list:
+        List of sentences.
+    """
+    data = []
+    datasets = get_datasets()
+
+    for name in names:
+        if not name in datasets.keys():
+            raise ValueError(f"Dataset {name} not supported")
+        
+        for set_name, set_value in datasets[name].items():
+            if set_value["filetype"] == "conllu":
+                data += read_conllu(set_value["path"])
+
+    return data
+
 def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list):
     """
     Load datasets from names list, returning train, val and test sets.
@@ -47,6 +76,8 @@ def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list)
     ----------
     names: list
         List of datasets to be loaded.
+    random_state: int
+        Random seed.
 
     Returns
     -------
