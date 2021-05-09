@@ -6,7 +6,7 @@ from dante_parser.parser.udpipe import train_udpipe
 
 def main():
     parser = argparse.ArgumentParser("Trains Udpipe Model")
-    parser.add_argument("--datasets", type=str, default="dante_01")
+    parser.add_argument("--datasets", type=str, default="bosque dante_01")
     args = parser.parse_args()
 
     datasets = args.datasets.split(" ")
