@@ -25,3 +25,20 @@ def read_conllu(path: str) -> list:
 
     return sents
 
+def write_conllu(file_name: str, sents: list):
+    """
+    Create conllu file with given sentences.
+
+    Parameters
+    ----------
+    file_name: str
+        Output filename.
+    sents: list
+        List of strings.
+    """
+
+    with open(file_name, "w") as out_f:
+        for sent in sents:
+            if sent: # Skip empty sentences.
+                out_f.write(sent)
+
