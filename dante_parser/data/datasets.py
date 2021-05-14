@@ -68,14 +68,17 @@ def load_data(names: list, random_state:int = 42) -> list:
 
     return data
 
-def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list):
+def load_splitted_data(names: list, only_test:bool = False, random_state:int = 42) -> (list, list, list):
     """
     Load datasets from names list, returning train, val and test sets.
+    If the dataset only have a train set, then it will sĺit it into train, val, test.
 
     Parameters
     ----------
     names: list
         List of datasets to be loaded.
+    only_test: bool
+        Doesn't return val set if True, else return all sets
     random_state: int
         Random seed.
 
@@ -83,6 +86,7 @@ def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list)
     -------
     (list, list, list):
         Train, Val and Test sets.
+        Obs: If `only_test` is set, then it will return (list, list)
     """
     datasets = get_datasets()
     train_sents = []
@@ -95,7 +99,10 @@ def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list)
         for set_name, set_value in datasets[name].items():
             if set_name in ["val", "dev"]:
                 if set_value["filetype"] == "conllu":
-                    val_sents += read_conllu(set_value["path"])
+                    if only_test:
+                        test_sents += read_conllu(set_value["path"])
+                    else:
+                        val_sents += read_conllu(set_value["path"])
             elif set_name == "test":
                 if set_value["filetype"] == "conllu":
                     test_sents += read_conllu(set_value["path"])
@@ -104,10 +111,17 @@ def load_splitted_data(names: list, random_state:int = 42) -> (list, list, list)
                     train_sents += read_conllu(set_value["path"])
                 elif set_value["filetype"] == "conllu":
                     train = read_conllu(set_value["path"])
-                    train, val = sents_train_test_split(train, random_state=random_state)
+                    train, test = sents_train_test_split(train, random_state=random_state)
+                    if not only_test:
+                        train, val = sentes_train_test_split(train, 0.1, random_sate=random_state)
+                        val_sents += val
                     train_sents += train
-                    val_sents += val
+                    test_sents += test
+
     shuffle(train_sents)
     shuffle(val_sents)
-            
-    return train_sents, val_sents, test_sents
+
+    if only_test:
+        return train_sents, test_sents
+    else:   
+        return train_sents, val_sents, test_sents
