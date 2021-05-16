@@ -1,5 +1,49 @@
 import re
 
+def extract_tokens(sentence: str) -> list:
+    """
+    Extract tokens from input sentence conllu.
+
+    Parameters
+    ----------
+    sentence: str
+        Sentence on CoNLL-U format
+
+    Retunrs
+    -------
+    list:
+        List of tokens.
+    """
+
+    conllu_tokens_regex = r"^[\d]+\t([^\t]*)"
+    tokens = re.findall(conllu_tokens_regex, sentence, re.MULTILINE)
+
+    return tokens
+
+def extract_ids(path: str) -> list:
+    """
+    Read a list of sentences on CoNLL-U format and return the list
+    of sentence's ids.
+
+    Parameters
+    ----------
+    path: str
+        Path to input CoNLL-U file.
+
+    Returns
+    -------
+    list:
+        List of ids.
+    """
+
+    ids = []
+    conllu_sentence_id_regex = r"sent_id = (dante_01_.*)"
+    
+    with open(path, "r") as conllu_file:
+        conllu_data = conllu_file.read()
+        ids = re.findall(conllu_sentence_id_regex, conllu_data)
+    
+    return ids
 
 def read_conllu(path: str) -> list:
     """
