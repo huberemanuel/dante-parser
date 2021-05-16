@@ -31,8 +31,12 @@ def get_datasets():
                 "path": os.path.join(base_path, "dante_01", "tweets_stocks.csv"),
                 "filetype": "csv"
             },
-            "1a150": {
-                "path": os.path.join(base_path, "dante_01", "1a150.conllu"),
+            "1a147": {
+                "path": os.path.join(base_path, "dante_01", "1a147.conllu"),
+                "filetype": "conllu"
+            },
+            "148a517": {
+                "path": os.path.join(base_path, "dante_01", "148a517.conllu"),
                 "filetype": "conllu"
             }
         }

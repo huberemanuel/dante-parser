@@ -20,8 +20,9 @@ def main():
     else:
         train, test = load_splitted_data(datasets, args.no_val)
         print(len(train), len(test))
+        write_conllu("test.conllu", test)
+
     write_conllu("train.conllu", train)
-    write_conllu("test.conllu", test)
 
 if __name__ == "__main__":
     main()
