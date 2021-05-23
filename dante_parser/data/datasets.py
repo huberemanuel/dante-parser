@@ -38,6 +38,10 @@ def get_datasets():
             "148a517": {
                 "path": os.path.join(base_path, "dante_01", "148a517.conllu"),
                 "filetype": "conllu"
+            },
+            "520a890": {
+                "path": os.path.join(base_path, "dante_01", "520a890.conllu"),
+                "filetype": "conllu"
             }
         }
     }
