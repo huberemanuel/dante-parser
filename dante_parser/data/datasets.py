@@ -104,7 +104,7 @@ def load_splitted_data(names: list, only_test:bool = False, random_state:int = 4
             if set_name in ["val", "dev"]:
                 if set_value["filetype"] == "conllu":
                     if only_test:
-                        test_sents += read_conllu(set_value["path"])
+                        train_sents += read_conllu(set_value["path"])
                     else:
                         val_sents += read_conllu(set_value["path"])
             elif set_name == "test":
