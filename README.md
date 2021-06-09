@@ -22,3 +22,9 @@ make download-udpipe
 make udpipe-bind
 ```
 
+Train udpipe:
+
+```bash
+PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH) python -m dante_parser.apps.train_udpipe --all_data --datasets "treebank.conllu1"
+```
+
