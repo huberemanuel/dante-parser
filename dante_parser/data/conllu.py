@@ -66,7 +66,9 @@ def read_conllu(path: str) -> list:
         data = in_file.read()
         
         sents = re.findall(conllu_sentence_regex, data)
-return sents def write_conllu(file_name: str, sents: list):
+    return sents
+
+def write_conllu(file_name: str, sents: list):
     """
     Create conllu file with given sentences.
 
