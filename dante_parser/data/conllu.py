@@ -86,3 +86,20 @@ def write_conllu(file_name: str, sents: list):
             if sent: # Skip empty sentences.
                 out_f.write(sent)
 
+def remove_tags(sent: str) -> str:
+    """
+    Replace every tag with "_".
+
+    Parameters
+    ----------
+    sent: str
+        Input string on CoNNL-U format.
+
+    Returns
+    -------
+    str:
+        Processed string.
+    """
+
+    return re.sub(r"(^\d+\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE)
+

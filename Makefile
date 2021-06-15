@@ -20,6 +20,9 @@ udpipe-bind: $(PYTHON_INCLUDE) $(UDPIPE_LIB_PATH)
 udpipe-train: $(UDPIPE_LIB_PATH)
 	PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH)  python -m dante_parser.apps.train_udpipe --all_data
 
+udpipe-evaluate: $(UDPIPE_LIB_PATH) $(model_path) $(input_conllu)
+        PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH) python -m dante_parser.apps.evaluate_udpipe $(model_path) $(input_conllu)
+
 udpipe2-create-files:
 	python -m dante_parser.apps.create_files_udpipe2
 
