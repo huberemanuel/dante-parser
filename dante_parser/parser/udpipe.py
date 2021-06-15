@@ -75,12 +75,12 @@ def predict_udpipe(sents: list, model: Model) -> list:
     tags = []
     for sent in train_sents:
         p = ProcessingError()
-        tags.append(model.tag(sent, Model.DEFAULT, p))
+        model.tag(sent, Model.DEFAULT, p)
         if p.occurred():
             print(sent.getText(), p.message)
         else:
-            s = ""
-            tags.append(OutputFormat.newConlluOutputFormat().writeSentence(sent))
+            pred = OutputFormat.newConlluOutputFormat().writeSentence(sent)
+            tags.append(pred)
 
     return tags
 

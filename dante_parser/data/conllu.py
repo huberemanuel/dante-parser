@@ -66,10 +66,7 @@ def read_conllu(path: str) -> list:
         data = in_file.read()
         
         sents = re.findall(conllu_sentence_regex, data)
-
-    return sents
-
-def write_conllu(file_name: str, sents: list):
+return sents def write_conllu(file_name: str, sents: list):
     """
     Create conllu file with given sentences.
 
@@ -80,7 +77,6 @@ def write_conllu(file_name: str, sents: list):
     sents: list
         List of strings.
     """
-
     with open(file_name, "w") as out_f:
         for sent in sents:
             if sent: # Skip empty sentences.
@@ -100,6 +96,19 @@ def remove_tags(sent: str) -> str:
     str:
         Processed string.
     """
-
     return re.sub(r"(^\d+\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE)
 
+def extract_tags(sents: list) -> list:
+    """
+    Returns tags from all sentences.
+
+    Parameters
+    ----------
+    sents: list
+        List of str on CoNNL-U format.
+
+    Returns
+    -------
+        List of str with respective pos-tags.
+    """
+    return list(map(lambda x: re.findall(r"^\d+\t*[^\t.]*\t[^\t.]*\t(\w+)", x, flags=re.MULTILINE), sents))
