@@ -45,7 +45,7 @@ def extract_ids(path: str) -> list:
     
     return ids
 
-def read_conllu(path: str) -> list:
+def read_conllu(path: str, no_header=False) -> list:
     """
     Reads conllu and split sentences.
 
@@ -53,6 +53,8 @@ def read_conllu(path: str) -> list:
     ----------
     path: str
         Path to the conllu file.
+    no_header: bool
+        Used when sentences have no header.
 
     Returns
     -------
@@ -65,6 +67,8 @@ def read_conllu(path: str) -> list:
     with open(path, "r") as in_file:
         data = in_file.read()
         
+        if no_header:
+            return data.split("\n\n")
         sents = re.findall(conllu_sentence_regex, data)
     return sents
 

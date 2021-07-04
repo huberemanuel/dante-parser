@@ -23,6 +23,9 @@ udpipe-train: $(UDPIPE_LIB_PATH)
 udpipe-evaluate: $(UDPIPE_LIB_PATH) $(model_path) $(input_conllu)
 	PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH) python -m dante_parser.apps.evaluate_udpipe $(model_path) $(input_conllu)
 
+udify-evaluate: $(UDPIPE_LIB_PATH) $(pred_file) $(true_file)
+	PYTHONPATH=$PYTHONPATH:$(UDPIPE_LIB_PATH) python -m dante_parser.apps.evaluate_udify $(pred_file) $(true_file)
+
 udpipe2-create-files:
 	python -m dante_parser.apps.create_files_udpipe2
 
