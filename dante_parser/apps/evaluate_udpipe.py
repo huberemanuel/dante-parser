@@ -1,10 +1,11 @@
 import argparse
 
 from dante_tokenizer.evaluate import evaluate_dataset
+from ufal.udpipe import Model
 
-from ufal.udpipe import Model, InputFormat
-from dante_parser.parser.udpipe import predict_udpipe 
-from dante_parser.data.conllu import read_conllu, remove_tags, extract_tags
+from dante_parser.data.conllu import extract_tags, read_conllu, remove_tags
+from dante_parser.parser.udpipe import predict_udpipe
+
 
 def main():
     parser = argparse.ArgumentParser("Evaluate UDPipe model")
@@ -22,6 +23,6 @@ def main():
 
     print(evaluate_dataset(pred_tags, true_tags))
 
+
 if __name__ == "__main__":
     main()
-

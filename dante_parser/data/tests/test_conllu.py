@@ -3,6 +3,7 @@ import tempfile
 
 from dante_parser.data.conllu import read_conllu
 
+
 def test_read_conlly():
 
     # Create dummy conllu
@@ -23,4 +24,3 @@ def test_read_conlly():
 
     sents = read_conllu(f_name)
     assert len(sents) == 2
-

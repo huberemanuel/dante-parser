@@ -1,5 +1,6 @@
 import re
 
+
 def extract_tokens(sentence: str) -> list:
     """
     Extract tokens from input sentence conllu.
@@ -20,6 +21,7 @@ def extract_tokens(sentence: str) -> list:
 
     return tokens
 
+
 def extract_ids(path: str) -> list:
     """
     Read a list of sentences on CoNLL-U format and return the list
@@ -38,12 +40,13 @@ def extract_ids(path: str) -> list:
 
     ids = []
     conllu_sentence_id_regex = r"sent_id = (dante_01_.*)"
-    
+
     with open(path, "r") as conllu_file:
         conllu_data = conllu_file.read()
         ids = re.findall(conllu_sentence_id_regex, conllu_data)
-    
+
     return ids
+
 
 def read_conllu(path: str, no_header=False) -> list:
     """
@@ -66,11 +69,12 @@ def read_conllu(path: str, no_header=False) -> list:
 
     with open(path, "r") as in_file:
         data = in_file.read()
-        
+
         if no_header:
             return data.split("\n\n")
         sents = re.findall(conllu_sentence_regex, data)
     return sents
+
 
 def write_conllu(file_name: str, sents: list):
     """
@@ -85,8 +89,9 @@ def write_conllu(file_name: str, sents: list):
     """
     with open(file_name, "w") as out_f:
         for sent in sents:
-            if sent: # Skip empty sentences.
+            if sent:  # Skip empty sentences.
                 out_f.write(sent)
+
 
 def remove_tags(sent: str) -> str:
     """
@@ -104,6 +109,7 @@ def remove_tags(sent: str) -> str:
     """
     return re.sub(r"(^\d+\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE)
 
+
 def extract_tags(sents: list) -> list:
     """
     Returns tags from all sentences.
@@ -117,4 +123,11 @@ def extract_tags(sents: list) -> list:
     -------
         List of str with respective pos-tags.
     """
-    return list(map(lambda x: re.findall(r"^\d+\t*[^\t.]*\t[^\t.]*\t(\w+)", x, flags=re.MULTILINE), sents))
+    return list(
+        map(
+            lambda x: re.findall(
+                r"^\d+\t*[^\t.]*\t[^\t.]*\t(\w+)", x, flags=re.MULTILINE
+            ),
+            sents,
+        )
+    )

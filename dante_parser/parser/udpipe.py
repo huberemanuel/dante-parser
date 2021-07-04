@@ -1,4 +1,6 @@
-from ufal.udpipe import Trainer, InputFormat, Sentence, Model, ProcessingError, OutputFormat
+from ufal.udpipe import (InputFormat, Model, OutputFormat, ProcessingError,
+                         Sentence, Trainer)
+
 
 def format_sents(sents: list, input_format: InputFormat) -> list:
     """
@@ -45,12 +47,19 @@ def train_udpipe(train_sents: list, val_sents: list, model_name: str):
     val_sents = format_sents(val_sents, input_format)
 
     trainer = Trainer()
-    model = trainer.train("morphodita_parsito", train_sents, val_sents, 
-                          Trainer.DEFAULT, Trainer.DEFAULT, Trainer.DEFAULT)
-    
+    model = trainer.train(
+        "morphodita_parsito",
+        train_sents,
+        val_sents,
+        Trainer.DEFAULT,
+        Trainer.DEFAULT,
+        Trainer.DEFAULT,
+    )
+
     model_file = open(model_name, "wb")
     model_file.write(model.encode("utf-8", errors="surrogateescape"))
     model_file.close()
+
 
 def predict_udpipe(sents: list, model: Model) -> list:
     """
@@ -83,4 +92,3 @@ def predict_udpipe(sents: list, model: Model) -> list:
             tags.append(pred)
 
     return tags
-
