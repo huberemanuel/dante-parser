@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 from dante_parser.data import load_data, load_splitted_data
 from dante_parser.data.conllu import write_conllu
@@ -23,14 +24,25 @@ def main():
 
     datasets = args.datasets.split()
 
+    if not args.no_val:
+        raise NotImplementedError("Validation split is currently not implement")
+
     if args.all_data:
         train = load_data(datasets)
+        write_conllu("train.conllu", train)
     else:
-        train, test = load_splitted_data(datasets, args.no_val)
-        print(len(train), len(test))
-        write_conllu("test.conllu", test)
-
-    write_conllu("train.conllu", train)
+        all_train = []
+        print(datasets)
+        for dataset in datasets:
+            train, test = load_splitted_data([dataset], args.no_val)
+            logging.info(
+                "Loaded {} train and {} test sents for dataset {}".format(
+                    len(train), len(test), dataset
+                )
+            )
+            all_train += train
+            write_conllu("{}_test.conllu".format(dataset), test)
+        write_conllu("train.conllu", all_train)
 
 
 if __name__ == "__main__":
