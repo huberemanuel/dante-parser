@@ -31,12 +31,36 @@ def get_datasets():
                 "path": os.path.join(base_path, "dante_01", "tweets_stocks.csv"),
                 "filetype": "csv",
             },
-            "train": {
-                "path": os.path.join(base_path, "dante_01", "train.conllu"),
+            "1a147.conllu": {
+                "path": os.path.join(base_path, "dante_01", "1a147.conllu"),
                 "filetype": "conllu",
             },
-            "test": {
-                "path": os.path.join(base_path, "dante_01", "test.conllu"),
+            "pack1.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack1.conllu"),
+                "filetype": "conllu",
+            },
+            "pack2.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack2.conllu"),
+                "filetype": "conllu",
+            },
+            "pack3.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack3.conllu"),
+                "filetype": "conllu",
+            },
+            "pack4.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack4.conllu"),
+                "filetype": "conllu",
+            },
+            "pack5.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack5.conllu"),
+                "filetype": "conllu",
+            },
+            "pack6.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack6.conllu"),
+                "filetype": "conllu",
+            },
+            "pack7.conllu": {
+                "path": os.path.join(base_path, "dante_01", "pack7.conllu"),
                 "filetype": "conllu",
             },
         },
