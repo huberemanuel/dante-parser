@@ -35,32 +35,32 @@ def get_datasets():
                 "path": os.path.join(base_path, "dante_01", "1a147.conllu"),
                 "filetype": "conllu",
             },
-            "pack1.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack1.conllu"),
+            "dante_pack1.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack1.conllu"),
                 "filetype": "conllu",
             },
-            "pack2.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack2.conllu"),
+            "dante_pack2.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack2.conllu"),
                 "filetype": "conllu",
             },
-            "pack3.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack3.conllu"),
+            "dante_pack3.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack3.conllu"),
                 "filetype": "conllu",
             },
-            "pack4.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack4.conllu"),
+            "dante_pack4.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack4.conllu"),
                 "filetype": "conllu",
             },
-            "pack5.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack5.conllu"),
+            "dante_pack5.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack5.conllu"),
                 "filetype": "conllu",
             },
-            "pack6.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack6.conllu"),
+            "dante_pack6.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack6.conllu"),
                 "filetype": "conllu",
             },
-            "pack7.conllu": {
-                "path": os.path.join(base_path, "dante_01", "pack7.conllu"),
+            "dante_pack7.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack7.conllu"),
                 "filetype": "conllu",
             },
         },
@@ -124,6 +124,10 @@ def load_splitted_data(
     train_sents = []
     val_sents = []
     test_sents = []
+
+    if not type(list) is list and type(list) is str:
+        names = [names]
+
     for name in names:
         if name not in datasets.keys():
             raise ValueError(f"Dataset {name} not supported")
