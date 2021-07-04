@@ -2,8 +2,8 @@ import os
 from random import shuffle
 
 import dante_parser
-from dante_parser.data import sents_train_test_split
 from dante_parser.data.conllu import read_conllu
+from dante_parser.data.sample import sents_train_test_split
 
 
 def get_datasets():
