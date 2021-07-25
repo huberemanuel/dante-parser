@@ -63,6 +63,18 @@ def get_datasets():
                 "path": os.path.join(base_path, "dante_01", "dante_pack7.conllu"),
                 "filetype": "conllu",
             },
+            "dante_pack8.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack8.conllu"),
+                "filetype": "conllu",
+            },
+            "dante_pack9.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack9.conllu"),
+                "filetype": "conllu",
+            },
+            "dante_pack10.conllu": {
+                "path": os.path.join(base_path, "dante_01", "dante_pack10.conllu"),
+                "filetype": "conllu",
+            },
         },
     }
     return datasets
