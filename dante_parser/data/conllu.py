@@ -123,10 +123,11 @@ def extract_tags(sents: list) -> list:
     -------
         List of str with respective pos-tags.
     """
+
     return list(
         map(
             lambda x: re.findall(
-                r"^\d+\t*[^\t.]*\t[^\t.]*\t(\w+)", x, flags=re.MULTILINE
+                r"^\d+\t*(?:[^\t]*)\t(?:[^\t]*)\t([^\t]*)", x, flags=re.MULTILINE
             ),
             sents,
         )
