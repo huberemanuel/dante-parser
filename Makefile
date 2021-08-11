@@ -30,5 +30,5 @@ udpipe2-create-files:
 	python -m dante_parser.apps.create_files_udpipe2
 
 test:
-	pytest -s --pyargs dante_parser
+	pytest -s
 
