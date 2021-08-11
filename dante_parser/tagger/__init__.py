@@ -1,0 +1,1 @@
+from dante_parser.tagger.most_frequent import MostFrequentTagger
