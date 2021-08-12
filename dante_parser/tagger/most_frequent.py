@@ -45,7 +45,11 @@ class MostFrequentTagger:
             raise ValueError("`tokens` and `tags` must have the same length")
         for token, tag in zip(tokens, tags):
             if len(token) != len(tag):
-                raise ValueError("`tokens` and `tags` must have the same length")
+                raise ValueError(
+                    "`tokens` and `tags` must have the same length.\n{} - {}".format(
+                        token, tag
+                    )
+                )
         self.counter = self._compute_counter(tokens, tags)
 
     def tag(self, tokens: List[str]) -> List[str]:
