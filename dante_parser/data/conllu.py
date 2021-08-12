@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 
 def extract_tokens(sentence: str) -> list:
@@ -160,6 +161,34 @@ def remove_multiword_rows(sents: list) -> list:
             lambda x: re.sub(
                 r"^\d+(?:\-\d+).*$",
                 "",
+                x,
+                flags=re.MULTILINE,
+            ),
+            sents,
+        )
+    )
+
+
+def clean_ud_tags(sents: List[str]) -> List[str]:
+    """
+    Remove non-UD tags from input CoNLL-U sentences
+
+    Parameters
+    ----------
+    sents: List[str]
+        List of str on CoNLL-U format.
+
+    Returns
+    -------
+    List[str]:
+        List of str with respective pos-tags.
+    """
+
+    return list(
+        map(
+            lambda x: re.sub(
+                r"(^\d+(?:\-\d+)?\t*(?:[^\t]*)\t(?:[^\t]*)\t)(E_DIGIT|E_PROC|E_PPROC|E_DIGITACAO|E_PREPROCESSAMENTO|E_PROCESSAMENTO)",
+                r"\1X",
                 x,
                 flags=re.MULTILINE,
             ),
