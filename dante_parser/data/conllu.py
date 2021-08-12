@@ -16,7 +16,7 @@ def extract_tokens(sentence: str) -> list:
         List of tokens.
     """
 
-    conllu_tokens_regex = r"^[\d]+\t([^\t]*)"
+    conllu_tokens_regex = r"^\d+(?:\-\d+)?\t([^\t]*)"
     tokens = re.findall(conllu_tokens_regex, sentence, re.MULTILINE)
 
     return tokens
@@ -107,7 +107,9 @@ def remove_tags(sent: str) -> str:
     str:
         Processed string.
     """
-    return re.sub(r"(^\d+\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE)
+    return re.sub(
+        r"(^\d+(?:\-\d+)?\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE
+    )
 
 
 def extract_tags(sents: list) -> list:
@@ -127,7 +129,9 @@ def extract_tags(sents: list) -> list:
     return list(
         map(
             lambda x: re.findall(
-                r"^\d+\t*(?:[^\t]*)\t(?:[^\t]*)\t([^\t]*)", x, flags=re.MULTILINE
+                r"^\d+(?:\-\d+)?\t*(?:[^\t]*)\t(?:[^\t]*)\t([^\t]*)",
+                x,
+                flags=re.MULTILINE,
             ),
             sents,
         )
