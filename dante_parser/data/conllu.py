@@ -100,7 +100,7 @@ def remove_tags(sent: str) -> str:
     Parameters
     ----------
     sent: str
-        Input string on CoNNL-U format.
+        Input string on CoNLL-U format.
 
     Returns
     -------
@@ -108,7 +108,10 @@ def remove_tags(sent: str) -> str:
         Processed string.
     """
     return re.sub(
-        r"(^\d+(?:\-\d+)?\t*[^\t.]*\t[^\t.]*\t)(\w+)", r"\1_", sent, flags=re.MULTILINE
+        r"(^\d+(?:\-\d+)?\t*(?:[^\t]*)\t(?:[^\t]*)\t)(\w+)",
+        r"\1_",
+        sent,
+        flags=re.MULTILINE,
     )
 
 
@@ -119,7 +122,7 @@ def extract_tags(sents: list) -> list:
     Parameters
     ----------
     sents: list
-        List of str on CoNNL-U format.
+        List of str on CoNLL-U format.
 
     Returns
     -------
@@ -130,6 +133,33 @@ def extract_tags(sents: list) -> list:
         map(
             lambda x: re.findall(
                 r"^\d+(?:\-\d+)?\t*(?:[^\t]*)\t(?:[^\t]*)\t([^\t]*)",
+                x,
+                flags=re.MULTILINE,
+            ),
+            sents,
+        )
+    )
+
+
+def remove_multiword_rows(sents: list) -> list:
+    """
+    Remove multiword rows from input CoNLL-U sentences
+
+    Parameters
+    ----------
+    sents: list
+        List of str on CoNLL-U format.
+
+    Returns
+    -------
+        List of str with respective pos-tags.
+    """
+
+    return list(
+        map(
+            lambda x: re.sub(
+                r"^\d+(?:\-\d+).*$",
+                "",
                 x,
                 flags=re.MULTILINE,
             ),
