@@ -82,7 +82,7 @@ def add_emb(data: List[conllu.TokenList]):
 
     for sent in tqdm(data):
         for tok in sent:
-            tok.__dict__["emb"] = nlp(tok["form"])
+            tok.emb = nlp(tok["form"])
     return data
 
 
