@@ -1,1 +1,1 @@
-from dante_parser.parser.simple_parser import SimpleParser
+from dante_parser.parser.simple_parser import *

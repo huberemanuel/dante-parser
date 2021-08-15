@@ -1,25 +1,18 @@
-from typing import Generator, List
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-import pkg_resources
-
-import numpy as np
-import json
-from io import open
-import os
-import time
 import argparse
+import os
 import random
+import time
+from io import open
+from typing import Generator, List
+
 import conllu
+import pkg_resources
+import spacy
+import torch
+import torch.optim as optim
 from tqdm import tqdm
 
-import spacy
-
 from dante_parser.parser.simple_oracle.model import TransitionBasedDependencyParsing
-from dante_parser.parser.simple_oracle.archybrid import Configuration
 
 
 def train(model, optimizer, sentences):
@@ -78,7 +71,6 @@ def load_data(path: str) -> Generator:
 
 def add_emb(data: List[conllu.TokenList], emb_size: float):
     nlp = spacy.load("pt_core_news_lg")
-    # nlp.enable_pipe("tok2vec")
 
     for sent in tqdm(data):
         for tok in sent:
@@ -136,12 +128,11 @@ def main():
         "PUNCT",
         "SYM",
         "X",
-    ]  # Should I include _ for multiword cases?
+    ]
     POS_DIC = {k: v for v, k in enumerate(ud_tags)}
     # Hyper parameters
     BATCH_SIZE = 8
-    # TODO: Use a pre-trained model and use this parameter
-    EMB_DIM = 300  #  300
+    EMB_DIM = 300
     POS_DIM = 32
     HIDDEN_DIM = 200
     HIDDEN_DIM2 = 100

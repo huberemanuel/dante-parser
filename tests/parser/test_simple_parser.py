@@ -1,7 +1,43 @@
+import argparse
 from typing import List
+
 import pytest
 
-from dante_parser.parser import SimpleParser
+from dante_parser.parser import ArcSystem, SimpleParser
+
+
+def test_arc_system_basic():
+    tokens = ["tudo", "bem", "?"]
+    arc = ArcSystem(tokens)
+    assert len(arc.stack) == 0
+    assert len(arc.buffer) == (len(tokens) + 1)
+    assert len(arc.deps) == 0
+
+    for _ in range(len(tokens) + 1):
+        arc.shift()
+    assert len(arc.stack) == (len(tokens) + 1)
+    assert arc.stack[0] == ArcSystem.ROOT
+    assert len(arc.buffer) == 0
+    assert len(arc.deps) == 0
+
+    arc.left_arc()
+    assert len(arc.deps) == 1
+    assert len(arc.stack) == 3
+    assert arc.stack[-1] == 3
+    assert arc.deps[0] == (3, 2)
+    arc.right_arc()
+    assert len(arc.deps) == 2
+    assert len(arc.stack) == 2
+    assert arc.deps[1] == (1, 3)
+    assert arc.stack[1] == 1
+    assert arc.stack[-1] == 1
+
+    assert not arc.left_arc()
+    arc.right_arc()
+
+    assert len(arc.stack) == 1
+    assert len(arc.buffer) == 0
+    assert len(arc.deps) == 3
 
 
 @pytest.mark.parametrize(

@@ -126,6 +126,8 @@ class Configuration:
 
     def __init__(self, sentence, sufficient_info=True):
         self.stack = Stack()
+        # Last position on th buffer is for the HEAD.
+        # What if we have more than one head? (In DANTE we need to be aware of that!)
         self.buffer = Buffer(list(range(1, len(sentence) + 1)))
         self.arcs = Arcs()
         self.contents = {

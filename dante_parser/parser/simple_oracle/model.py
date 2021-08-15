@@ -1,9 +1,9 @@
+from operator import itemgetter
+from typing import Dict, List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from operator import itemgetter
-from typing import Dict, List
 
 from dante_parser.parser.simple_oracle.archybrid import Configuration
 
@@ -60,13 +60,9 @@ class TransitionBasedDependencyParsing(nn.Module):
                 pos_id = self.pos_dim - 1
             pos_vec[pos_id] = 1.0
             # It reads a pre-trained embed and concatenates the pos-tag one-hot
-            # TODO: read embeddings for each token from a pre-trained model.
-            # import pdb;pdb.set_trace()
             for i in range(len(word.emb)):
                 word.emb[i] = float(word.emb[i])
             x.append(word.emb + pos_vec)
-            # x.append(pos_vec)
-        # IMPORTANT: The input of this network is the concatenation of a embedding representation
         # plus the pos-tag one-hot representation
         x = torch.tensor(x).cuda()
         # x = [sent len, emb dim + pos dim]
