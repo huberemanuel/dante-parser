@@ -76,13 +76,16 @@ def load_data(path: str) -> Generator:
     return conllu.parse(file_data)
 
 
-def add_emb(data: List[conllu.TokenList]):
+def add_emb(data: List[conllu.TokenList], emb_size: float):
     nlp = spacy.load("pt_core_news_lg")
-    nlp.enable_pipe("tok2vec")
+    # nlp.enable_pipe("tok2vec")
 
     for sent in tqdm(data):
         for tok in sent:
-            tok.emb = nlp(tok["form"])
+            if tok["form"] in nlp.vocab.vectors.keys():
+                tok.emb = nlp.vocab.vectors[tok["form"]]
+            else:
+                tok.emb = [0.0] * emb_size
     return data
 
 
@@ -146,9 +149,9 @@ def main():
     DROPOUT = 0.5
 
     training_data = load_data(args.train_conllu)[:300]
-    training_data = add_emb(training_data)
-    test_data = load_data(args.test_conllu)
-    test_data = add_emb(test_data)
+    training_data = add_emb(training_data, EMB_DIM)
+    # test_data = load_data(args.test_conllu)
+    # test_data = add_emb(test_data)
 
     model = TransitionBasedDependencyParsing(
         POS_DIC, EMB_DIM, POS_DIM, HIDDEN_DIM, HIDDEN_DIM2, N_LAYERS, DROPOUT
