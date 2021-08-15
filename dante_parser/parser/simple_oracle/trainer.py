@@ -148,7 +148,7 @@ def main():
     N_LAYERS = 2
     DROPOUT = 0.5
 
-    training_data = load_data(args.train_conllu)[:300]
+    training_data = load_data(args.train_conllu)
     training_data = add_emb(training_data, EMB_DIM)
     # test_data = load_data(args.test_conllu)
     # test_data = add_emb(test_data)
