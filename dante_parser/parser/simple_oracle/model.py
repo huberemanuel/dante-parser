@@ -61,10 +61,10 @@ class TransitionBasedDependencyParsing(nn.Module):
             pos_vec[pos_id] = 1.0
             # It reads a pre-trained embed and concatenates the pos-tag one-hot
             # TODO: read embeddings for each token from a pre-trained model.
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             for i in range(len(word.emb)):
-                word["emb"][i] = float(word.emb[i])
-            x.append(word["emb"] + pos_vec)
+                word.emb[i] = float(word.emb[i])
+            x.append(word.emb + pos_vec)
             # x.append(pos_vec)
         # IMPORTANT: The input of this network is the concatenation of a embedding representation
         # plus the pos-tag one-hot representation
