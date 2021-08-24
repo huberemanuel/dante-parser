@@ -1,12 +1,17 @@
 import argparse
 import logging
+import math
 import pickle
-from typing import List
+from typing import Dict, List
 
+import numpy as np
+import torch
 from conllu import TokenList, parse
+from torch import nn, optim
 from tqdm import tqdm
 
 from dante_parser.parser.first_parser.arc_system import ArcSystem
+from dante_parser.parser.first_parser.model import FirstParser
 from dante_parser.parser.first_parser.tree import DependencyTree
 from dante_parser.parser.first_parser.utils import read_tree
 from dante_parser.parser.first_parser.vocabulary import Vocabulary
@@ -162,6 +167,8 @@ def main():
         default=None,
         help="Path to pickled training instances.",
     )
+    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--epochs", type=int, default=5)
     args = parser.parse_args()
 
     logger = logging.getLogger("Trainer")
@@ -198,6 +205,56 @@ def main():
         )
         with open("train_instances.pickle", "wb") as train_file:
             pickle.dump(train_instances, train_file)
+
+    kwargs = {
+        "embedding_dim": 50,
+        "n_features": len(train_instances[0]["input"]),
+        "num_tokens": vocabulary.size(),
+        "hidden_dim": 200,
+        "num_transitions": len(transitions),
+    }
+
+    model = FirstParser(**kwargs)
+
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=0.003,
+    )
+    loss_func = nn.CrossEntropyLoss()
+
+    X_train = torch.tensor([x["input"] for x in train_instances])
+
+    # A little gambiarra fow now:
+    for i in range(len(train_instances)):
+        train_instances[i]["label"] = np.argmax(train_instances[i]["label"])
+        # for j in range(len(train_instances[i]["label"])):
+        # train_instances[i]["label"][j] = max(0, train_instances[i]["label"][j])
+
+    y_train = torch.tensor([x["label"] for x in train_instances])
+
+    for epoch in range(args.epochs):
+        print("Epoch {:} out of {:}".format(epoch + 1, args.epochs))
+        n_minibatches = math.ceil(len(train_instances) / args.batch_size)
+        epoch_loss = 0
+
+        permutation = torch.randperm(X_train.size()[0])
+        with tqdm(total=(n_minibatches)) as prog:
+            for i in range(0, len(train_instances), args.batch_size):
+                optimizer.zero_grad()
+
+                indices = permutation[i : i + args.batch_size]
+                batch_x, batch_y = X_train[indices], y_train[indices]
+
+                # in case you wanted a semi-full example
+                outputs = model.forward(batch_x)
+                loss = loss_func(outputs, batch_y)
+
+                epoch_loss += loss.item()
+
+                loss.backward()
+                optimizer.step()
+            prog.update(1)
+        print("Epoch average loss: {}".format(np.mean(epoch_loss)))
 
 
 if __name__ == "__main__":

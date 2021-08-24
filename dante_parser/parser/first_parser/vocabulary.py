@@ -56,6 +56,13 @@ class Vocabulary:
             self.id_to_token[index] = label
             index += 1
 
+    def size(self) -> int:
+        return (
+            len(self.word_token_to_id)
+            + len(self.pos_token_to_id)
+            + len(self.label_token_to_id)
+        )
+
     def get_word_id(self, token: str) -> int:
         if token in self.word_token_to_id:
             return self.word_token_to_id[token]
