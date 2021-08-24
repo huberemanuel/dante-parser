@@ -1,5 +1,6 @@
 import os
 from random import shuffle
+from typing import Tuple
 
 import dante_parser
 from dante_parser.data.conllu import read_conllu
@@ -112,7 +113,7 @@ def load_data(names: list, random_state: int = 42) -> list:
 
 def load_splitted_data(
     names: list, only_test: bool = False, random_state: int = 42
-) -> (list, list, list):
+) -> Tuple[list, list, list]:
     """
     Load datasets from names list, returning train, val and test sets.
     If the dataset only have a train set, then it will sĺit it into train, val, test.

@@ -149,3 +149,5 @@ tags
 [._]*.un~
 
 .vim/
+.vscode/
+*.pickle

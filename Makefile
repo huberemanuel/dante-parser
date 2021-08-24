@@ -32,3 +32,8 @@ udpipe2-create-files:
 test:
 	pytest -s
 
+install-spacy-sm:
+	python -m spacy download pt_core_news_sm
+
+install-spacy-lg:
+	python -m spacy download pt_core_news_lg
