@@ -11,6 +11,8 @@ class Node(Enum):
 class DependencyTree:
     """
     Represents a dependency relation tree.
+    Used as a gold standard tree read from a CoNLL-U file or constructed
+    with a parsing system.
     """
 
     def __init__(self) -> None:
@@ -34,10 +36,6 @@ class DependencyTree:
         self.head.append(head)
         self.label.append(label)
 
-    def set_relation(self, dependent: int, head: int, label: str) -> None:
-        self.head[dependent] = head
-        self.label[dependent] = label
-
     def set_dependency(self, token_idx: int, head_idx: int, label: str) -> None:
         """
         Create a relation between the token from `token_idx` and head from `head_idx`
@@ -53,12 +51,30 @@ class DependencyTree:
         label: str
             Label of the dependency.
         """
+        if token_idx <= 0 or token_idx > self.n:
+            raise ValueError(
+                "Dependent node at index {} not present on tree {}".format(
+                    token_idx, self.head
+                )
+            )
+        elif head_idx < 0 or head_idx > self.n:
+            raise ValueError(
+                "Head node at index {} not present on tree {}".format(
+                    head_idx, self.head
+                )
+            )
+
         self.head[token_idx] = head_idx
         self.label[token_idx] = label
 
     def get_head(self, index: int) -> int:
         """
-        Get head from the given node index
+        Get head from the given node index.
+
+        Parameters
+        ----------
+        index:
+            Index of the dependent node.
         """
         if index <= 0 or index > self.n:
             return Node.NONEXIST.value
@@ -66,29 +82,29 @@ class DependencyTree:
 
     def get_label(self, index: int) -> int:
         """
-        Get the label from the given node index
+        Get the label from the given node index.
+
+        Parameters
+        ----------
+        index:
+            Index of the dependent node.
         """
         if index <= 0 or index > self.n:
-            # Certeza? No índice zero não deveria retornar o ROOT?
             return Node.NULL.name
         return self.label[index]
 
     def get_root(self) -> int:
-        """
-        Get the index of the root node.
-        """
-        root = 0
+        """Get the index of the root node."""
+        root = Node.ROOT.value
         for i in range(1, self.n + 1):
             if self.get_head(i) == root:
                 return i
         return 0
 
     def is_single_root(self) -> bool:
-        """
-        Check if the tree has more than one root.
-        """
+        """Check if the tree has more than one root."""
         roots = 0
-        root = 0
+        root = Node.ROOT.value
         for i in range(1, self.n + 1):
             if self.get_head(i) == root:
                 roots += 1
@@ -137,11 +153,16 @@ class DependencyTree:
         if not self.is_valid_tree():
             return False
         self.counter = -1
-        return self.visit_tree(0)
+        return self.visit_tree(Node.ROOT.value)
 
-    def visit_tree(self, w) -> bool:
+    def visit_tree(self, w: int) -> bool:
         """
         Inner recursive function for checking projectivity of subtree.
+
+        Parameters
+        ----------
+        w:
+            Index of the anchor node.
         """
         for i in range(1, w):
             if self.get_head(i) == w and not self.visit_tree(i):
@@ -154,10 +175,15 @@ class DependencyTree:
                 return False
         return True
 
-    def equal(self, t) -> bool:
+    def equal(self, t: "DependencyTree") -> bool:
         """
         Check if self and t are equal, asserting number of elements,
         heads and labels.
+
+        Parameters
+        ----------
+        t: DependencyTree
+            Tree for comparison.
         """
         if t.n != self.n:
             return False
@@ -169,6 +195,7 @@ class DependencyTree:
         return True
 
     def print_tree(self) -> None:
+        """Print all nodes with their dependency labels."""
         for i in range(1, self.n + 1):
             print(str(i) + " " + str(self.get_head(i)) + " " + self.get_label(i))
         print("\n")

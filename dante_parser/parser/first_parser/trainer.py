@@ -1,5 +1,4 @@
 import argparse
-import itertools
 import logging
 from typing import List
 
@@ -8,49 +7,28 @@ from tqdm import tqdm
 
 from dante_parser.parser.first_parser.arc_system import ArcSystem
 from dante_parser.parser.first_parser.tree import DependencyTree
+from dante_parser.parser.first_parser.utils import read_tree
 from dante_parser.parser.first_parser.vocabulary import Vocabulary
 
 
-def get_labels(sents: List[TokenList], field: str) -> List[str]:
-    """
-    Read all possible labels presented on the dataset for the given
-    field, returning unique label values. Ignores "_" symbol.
-
-    Parameters
-    ----------
-    sents: List[str]
-        List of sentences, where each sentence contains a list of Tokens.
-    field: str
-        Field to extract information from
-    """
-    return sorted(
-        list(
-            filter(
-                lambda k: k != "_",
-                set(
-                    itertools.chain.from_iterable(
-                        list(map(lambda x: list(map(lambda y: y[field], x)), sents))
-                    )
-                ),
-            )
-        )
-    )
-
-
-def read_tree(sentence: TokenList) -> DependencyTree:
-    tree = DependencyTree()
-    for token in sentence:
-        if not isinstance(token["id"], tuple):
-            tree.add(token["head"], token["deprel"])
-    return tree
-
-
 def get_configuration_features(
-    configuration: ArcSystem, vocabulary: Vocabulary, sentence: TokenList
+    configuration: ArcSystem, vocabulary: Vocabulary
 ) -> List[int]:
     """
     Implement feature extraction described in
     "A Fast and Accurate Dependency Parser using Neural Networks"(2014)
+
+    Parameters
+    ----------
+    configuration: ArcSystem
+        ArcSystem that stores the sentence.
+    vocabulary: Vocabulary
+        Given vocabulary.
+
+    Returns
+    -------
+    List[int]
+        List of features.
     """
     words = []
     posTags = []
@@ -68,10 +46,10 @@ def get_configuration_features(
         words.append(vocabulary.get_word_id(configuration.get_word(buffer)))
         posTags.append(vocabulary.get_pos_id(configuration.get_pos(buffer)))
 
-    # Get the words, labels, and pos tags of the first and second left child and right child of the top two elements
-    # on the stack, and
-    # Get the words, labels, and pos tags of the leftmost of the leftmost and rightmost of the rightmost child
-    # of the top two elements on the stack
+    # Get the words, labels, and pos tags of the first and second left
+    # child and right child of the top two elements on the stack, and
+    # Get the words, labels, and pos tags of the leftmost of the leftmost
+    # and rightmost of the rightmost child of the top two elements on the stack
     for idx in range(2):
         stack = configuration.get_stack(idx)
         firstLeftChild = configuration.get_left_child(stack, 1)
@@ -136,15 +114,10 @@ def generate_training_instances(
             configuration = ArcSystem(sentence)
             configuration.shift()
             while not configuration.is_empty():
-                # try:
+
                 oracle_decision = ArcSystem.get_oracle_decision(configuration, tree)
-                feature = get_configuration_features(
-                    configuration, vocabulary, sentence
-                )
-                # except:
-                # feature = get_configuration_features(
-                # configuration, vocabulary, sentence
-                # )
+                feature = get_configuration_features(configuration, vocabulary)
+
                 configuration.apply(oracle_decision)
 
                 label = []
@@ -202,7 +175,7 @@ def main():
         item[0]
         for item in sorted(vocabulary.label_token_to_id.items(), key=lambda k: k[1])
     ]
-    transitions = ArcSystem.make_transitions(dep_labels)
+    transitions = ArcSystem.generate_transitions(dep_labels)
 
     assert len(transitions) == (len(dep_labels) * 2 + 1)
     logging.info(

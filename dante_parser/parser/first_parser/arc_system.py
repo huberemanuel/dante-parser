@@ -4,17 +4,15 @@ from dante_parser.parser.first_parser.tree import DependencyTree, Node
 
 
 class ArcSystem:
-    """Basic arc system for projective arc system."""
-
-    SHIFT = 1
-    LEFT_ARC = 2
-    RIGHT_ARC = 3
+    """
+    Basic arc system for projective arc system.
+    It does not handle non-projective sentences or multi-head trees.
+    """
 
     def __init__(self, tokens: List[str]) -> None:
         self.stack = []
         length = len(list(filter(lambda x: isinstance(x["id"], int), tokens)))
         self.buffer = [Node.ROOT.value] + list(range(1, length + 1))
-        self.deps = []  # List of dependency relations
         self.tree = DependencyTree()
         for i in range(1, length + 1):
             self.tree.add(Node.NONEXIST.value, Node.UNKOWN.name)
@@ -23,6 +21,16 @@ class ArcSystem:
     def get_word(self, index: int) -> str:
         """
         Get word at given index.
+
+        Parameters
+        ----------
+        index: int
+            Index of token.
+
+        Returns
+        -------
+        str:
+            Word form for given node at `index`.
         """
         if index == 0:
             return Node.ROOT.name
@@ -36,7 +44,17 @@ class ArcSystem:
 
     def get_pos(self, index: int) -> str:
         """
-        Get pos at given index.
+        Get upos at given index.
+
+        Parameters
+        ----------
+        index: int
+            Index of token.
+
+        Returns
+        -------
+        str:
+            UPOS tag for given node at `index`.
         """
         if index == 0:
             return Node.ROOT.name
@@ -50,11 +68,22 @@ class ArcSystem:
 
     def get_label(self, index: int) -> str:
         """
-        Get dep relation label at given index.
+        Get dependency relation label at given index.
+
+        Parameters
+        ----------
+        index: int
+            Index of token.
+
+        Returns
+        -------
+        str:
+            Dependency relation between index and its head.
         """
         return self.tree.get_label(index)
 
     def shift(self) -> bool:
+        """Apply shift operation if possible."""
         if len(self.buffer) < 1:
             return False  # Could not make a shift.
         else:
@@ -62,30 +91,25 @@ class ArcSystem:
             self.stack.append(element)
             return True
 
-    def left_arc(self) -> bool:
-        if len(self.stack) < 2:
-            return False
-        else:
-            head = self.stack[-1]
-            dep = self.stack.pop(-2)
-            self.deps.append((head, dep))  # head -> dep
-            return True
-
-    def right_arc(self) -> bool:
-        if len(self.stack) < 2:
-            return False
-        else:
-            head = self.stack[-2]
-            dep = self.stack.pop(-1)
-            self.deps.append((head, dep))  # head -> dep
-            return True
-
     def is_empty(self) -> bool:
+        """Verify if both buffer and stack are empty or not."""
         return len(self.buffer) == 0 and len(self.stack) <= 1
 
     def has_other_child(self, word: int, gold_tree: DependencyTree) -> bool:
         """
         Check if the gold tree has a relation that the current tree hasn't.
+
+        Parameters
+        ----------
+        word: int
+            Index of the anchor word.
+        gold_tree: DependencyTree
+            Tree for the treebank.
+
+        Returns
+        -------
+        bool:
+            Whether exists another child that has the same parent of `word` or not.
         """
         for i in range(1, gold_tree.n + 1):
             if i > self.tree.n and gold_tree.get_head(i) == word:
@@ -95,19 +119,61 @@ class ArcSystem:
         return False
 
     def get_stack(self, index: int) -> int:
+        """
+        Get token at `index` if exists.
+
+        Parameters
+        ----------
+        index: int
+            Index of token.
+
+        Returns
+        -------
+        int:
+            Token on the stack at given index.
+        """
         if index == 0 and len(self.stack) >= 1:
             return self.stack[-1]
+
         n = index + 1
         if index == 0 or n > len(self.stack):
             return Node.NONEXIST.value
+
         return self.stack[-n]
 
     def get_buffer(self, index: int) -> int:
+        """
+        Get token at `index` if exists.
+
+        Parameters
+        ----------
+        index: int
+            Index of token.
+
+        Returns
+        -------
+        int:
+            Token on the buffer at given index.
+        """
         if index < 0 or index >= len(self.buffer):
             return Node.NONEXIST.value
+
         return self.buffer[index]
 
     def apply(self, transition: str) -> bool:
+        """
+        Apply given transition on actual configuration.
+
+        Parameters
+        ----------
+        transition: str
+            Valid transition for the actual ArcSystem.
+
+        Returns
+        -------
+        bool:
+            Whether transition was applied successfully or not.
+        """
         if not self.can_apply(transition):
             return False
 
@@ -116,10 +182,10 @@ class ArcSystem:
         label = transition[2:]
 
         if transition.startswith("R"):
-            self.tree.set_relation(dependent=first_word, head=second_word, label=label)
+            self.tree.set_dependency(first_word, second_word, label)
             self.stack.pop(-1)
         elif transition.startswith("L"):
-            self.tree.set_relation(dependent=second_word, head=first_word, label=label)
+            self.tree.set_dependency(second_word, first_word, label)
             self.stack.pop(-2)
         else:
             self.shift()
@@ -127,7 +193,19 @@ class ArcSystem:
         return True
 
     def can_apply(self, transition: str) -> bool:
-        """Check if it's possible to apply `transition` on actual configuration"""
+        """
+        Check if it's possible to apply `transition` on actual configuration
+
+        Parameters
+        ----------
+        transition: str
+            Valid transition on the ArcSystem
+
+        Returns
+        -------
+        bool:
+            Whether it is possible to apply transition on actual configuration.
+        """
         if transition.startswith("R") or transition.startswith("L"):
             label = transition[2:]
             if transition.startswith("L"):
@@ -156,6 +234,7 @@ class ArcSystem:
         Get cnt-th leftmost child of index.
         (i.e., if count = 1, the leftmost child of index will be returned,
                 if count = 2, the 2nd leftmost child of index will be returned.)
+        Obs: Used for extracting features for models.
         """
         if index < 0 or index > self.tree.n:
             return Node.NONEXIST.value
@@ -166,6 +245,7 @@ class ArcSystem:
                 c += 1
                 if c == count:
                     return i
+
         return Node.NONEXIST.value
 
     def get_right_child(self, index: int, count: int) -> int:
@@ -173,6 +253,7 @@ class ArcSystem:
         Get cnt-th leftmost child of index.
         (i.e., if count = 1, the rightmost child of index will be returned,
                 if count = 2, the 2nd leftmost child of index will be returned.)
+        Obs: Used for extracting features for models.
         """
         if index < 0 or index > self.tree.n:
             return Node.NONEXIST.value
@@ -183,10 +264,27 @@ class ArcSystem:
                 c += 1
                 if c == count:
                     return i
+
         return Node.NONEXIST.value
 
     @staticmethod
     def get_oracle_decision(configuration: "ArcSystem", tree: DependencyTree) -> str:
+        """
+        Given an ArcSystem `configuration` and the gold `tree`, gets the next
+        transition that the system should make.
+
+        Parameters
+        ----------
+        configuration: ArcSystem
+            Actual configuration of an ArcSystem.
+        tree: DependencyTree
+            Gold tree from treebank.
+
+        Returns
+        -------
+        str:
+            Generated transition.
+        """
         first_word = configuration.get_stack(0)
         second_word = configuration.get_stack(1)
         if (
@@ -205,7 +303,21 @@ class ArcSystem:
         return "P"
 
     @staticmethod
-    def make_transitions(relations: List[str]) -> List[str]:
+    def generate_transitions(relations: List[str]) -> List[str]:
+        """
+        Generate all possible transitions given the dependency `relations`.
+
+        Parameters
+        ----------
+        relations: List[str]
+            Possible dependency relations.
+
+        Returns
+        -------
+        List[str]
+            All possible transitions.
+        """
+        # TODO: Automatically reads relations from UD standards
         transitions = []
 
         for rel in relations:
