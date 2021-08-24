@@ -214,7 +214,8 @@ def main():
         "num_transitions": len(transitions),
     }
 
-    model = FirstParser(**kwargs)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = FirstParser(**kwargs).to(device)
 
     optimizer = optim.Adam(
         model.parameters(),
@@ -222,7 +223,7 @@ def main():
     )
     loss_func = nn.CrossEntropyLoss()
 
-    X_train = torch.tensor([x["input"] for x in train_instances])
+    X_train = torch.tensor([x["input"] for x in train_instances], device=device)
 
     # A little gambiarra fow now:
     for i in range(len(train_instances)):
@@ -230,7 +231,7 @@ def main():
         # for j in range(len(train_instances[i]["label"])):
         # train_instances[i]["label"][j] = max(0, train_instances[i]["label"][j])
 
-    y_train = torch.tensor([x["label"] for x in train_instances])
+    y_train = torch.tensor([x["label"] for x in train_instances], device=device)
 
     for epoch in range(args.epochs):
         print("Epoch {:} out of {:}".format(epoch + 1, args.epochs))
@@ -243,6 +244,7 @@ def main():
                 optimizer.zero_grad()
 
                 indices = permutation[i : i + args.batch_size]
+
                 batch_x, batch_y = X_train[indices], y_train[indices]
 
                 # in case you wanted a semi-full example
