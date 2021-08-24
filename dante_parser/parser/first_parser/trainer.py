@@ -126,22 +126,9 @@ def generate_training_instances(
 
                 configuration.apply(oracle_decision)
 
-                label = []
-                for j in range(len(transitions)):
-                    t = transitions[j]
-                    if t == oracle_decision:
-                        label.append(1.0)
-                    elif configuration.can_apply(t):
-                        label.append(0.0)
-                    else:
-                        label.append(-1.0)
-                if 1.0 not in label:
-                    logging.error(
-                        "No gold_transition was for for sentence {} in "
-                        "configuration: {}".format(sentence, configuration)
-                    )
-
-                instances.append({"input": feature, "label": label})
+                instances.append(
+                    {"input": feature, "label": transitions.index(oracle_decision)}
+                )
     return instances
 
 
@@ -183,6 +170,7 @@ def main():
     val_sents = parse(open(args.val_conllu, "r").read())
 
     train_trees = list(map(read_tree, train_sents))
+    val_trees = list(map(read_tree, val_sents))
     vocabulary = Vocabulary(train_sents, train_trees)
 
     dep_labels = [
@@ -205,6 +193,9 @@ def main():
         )
         with open("train_instances.pickle", "wb") as train_file:
             pickle.dump(train_instances, train_file)
+    val_instances = generate_training_instances(
+        transitions, val_sents, val_trees, vocabulary
+    )
 
     kwargs = {
         "embedding_dim": 50,
@@ -223,15 +214,11 @@ def main():
     )
     loss_func = nn.CrossEntropyLoss()
 
-    X_train = torch.tensor([x["input"] for x in train_instances], device=device)
+    X_train = torch.tensor([x["input"] for x in train_instances]).to(device)
+    y_train = torch.tensor([x["label"] for x in train_instances]).to(device)
 
-    # A little gambiarra fow now:
-    for i in range(len(train_instances)):
-        train_instances[i]["label"] = np.argmax(train_instances[i]["label"])
-        # for j in range(len(train_instances[i]["label"])):
-        # train_instances[i]["label"][j] = max(0, train_instances[i]["label"][j])
-
-    y_train = torch.tensor([x["label"] for x in train_instances], device=device)
+    X_val = torch.tensor([x["input"] for x in val_instances]).to(device)
+    y_val = torch.tensor([x["label"] for x in val_instances]).to(device)
 
     for epoch in range(args.epochs):
         print("Epoch {:} out of {:}".format(epoch + 1, args.epochs))
@@ -255,8 +242,22 @@ def main():
 
                 loss.backward()
                 optimizer.step()
-            prog.update(1)
-        print("Epoch average loss: {}".format(np.mean(epoch_loss)))
+                prog.update(1)
+        model.eval()
+        with torch.no_grad():
+            val_loss = 0
+            for i in range(0, len(val_instances), args.batch_size):
+                batch_x = X_val[i : i + args.batch_size]
+                batch_y = y_val[i : i + args.batch_size]
+
+                outputs = model.forward(batch_x)
+                loss = loss_func(outputs, batch_y)
+                val_loss += loss.item()
+
+        print(
+            "Epoch average training loss: {}".format(epoch_loss / len(train_instances))
+        )
+        print("Epoch average validation loss: {}".format(val_loss / len(val_instances)))
 
 
 if __name__ == "__main__":
