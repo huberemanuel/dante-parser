@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pickle
 from typing import List
 
 from conllu import TokenList, parse
@@ -155,6 +156,12 @@ def main():
         type=str,
         help="Logging levels: info|warning|error",
     )
+    parser.add_argument(
+        "--cached_train",
+        type=str,
+        default=None,
+        help="Path to pickled training instances.",
+    )
     args = parser.parse_args()
 
     logger = logging.getLogger("Trainer")
@@ -182,11 +189,15 @@ def main():
         "Constructed {} possible dependency transitions".format(len(transitions))
     )
 
-    logging.info("Generating traning instances")
-    train_instances = generate_training_instances(
-        transitions, train_sents, train_trees, vocabulary
-    )
-    print(train_instances[0])
+    if args.cached_train:
+        train_instances = pickle.load(open(args.cached_train, "rb"))
+    else:
+        logging.info("Generating traning instances")
+        train_instances = generate_training_instances(
+            transitions, train_sents, train_trees, vocabulary
+        )
+        with open("train_instances.pickle", "wb") as train_file:
+            pickle.dump(train_instances, train_file)
 
 
 if __name__ == "__main__":
