@@ -1,8 +1,9 @@
 import argparse
+import copy
 import logging
 import math
 import pickle
-from typing import Dict, List
+from typing import List
 
 import numpy as np
 import torch
@@ -126,23 +127,96 @@ def generate_training_instances(
 
                 configuration.apply(oracle_decision)
 
-                label = []
-                for j in range(len(transitions)):
-                    t = transitions[j]
-                    if t == oracle_decision:
-                        label.append(1.0)
-                    elif configuration.can_apply(t):
-                        label.append(0.0)
-                    else:
-                        label.append(-1.0)
-                if 1.0 not in label:
-                    logging.error(
-                        "No gold_transition was for for sentence {} in "
-                        "configuration: {}".format(sentence, configuration)
-                    )
-
-                instances.append({"input": feature, "label": label})
+                instances.append(
+                    {"input": feature, "label": transitions.index(oracle_decision)}
+                )
     return instances
+
+
+def predict(
+    model: nn.Module,
+    sentences: List[TokenList],
+    vocabulary: Vocabulary,
+    transitions: List[str],
+    device: str = "cpu",
+) -> List[DependencyTree]:
+    predicted_trees = []
+    for sentence in tqdm(sentences):
+        configuration = ArcSystem(sentence)
+        while not configuration.is_empty():
+            prev_configuration = copy.deepcopy(configuration)
+            features = get_configuration_features(configuration, vocabulary)
+            features = torch.tensor(features).unsqueeze(0).to(device)
+            logits = model(features).cpu()
+            transition = transitions[np.argmax(logits)]
+            configuration.apply(transition)
+            if (
+                prev_configuration.buffer == configuration.buffer
+                and prev_configuration.stack == configuration.stack
+            ):
+                break
+        predicted_trees.append(configuration.tree)
+    return predicted_trees
+
+
+def evaluate(
+    sentences: List[TokenList],
+    predicted_trees: List[DependencyTree],
+    gold_trees: List[DependencyTree],
+) -> str:
+    """
+    Evaluate performance on a list of sentences, predicted parses, and gold parses
+    """
+    result = []
+
+    if len(predicted_trees) != len(gold_trees):
+        print("Incorrect number of trees.")
+        return None
+
+    correct_arcs = 0
+    correct_heads = 0
+    correct_trees = 0
+    correct_root = 0
+    sum_arcs = 0
+    invalid_trees = 0
+
+    for i in range(len(predicted_trees)):
+        tree = predicted_trees[i]
+        gold_tree = gold_trees[i]
+
+        if tree.n != gold_tree.n:
+            print("Tree", i + 1, ": incorrect number of nodes.")
+            return None
+
+        if not tree.is_valid_tree():
+            print("Tree", i + 1, ": illegal.")
+            invalid_trees += 1
+            continue
+
+        n_correct_head = 0
+
+        for j in range(1, tree.n + 1):
+            if tree.get_head(j) == gold_tree.get_head(j):
+                correct_heads += 1
+                n_correct_head += 1
+                if tree.get_label(j) == gold_tree.get_label(j):
+                    correct_arcs += 1
+            sum_arcs += 1
+
+        if n_correct_head == tree.n:
+            correct_trees += 1
+        if tree.get_root() == gold_tree.get_root():
+            correct_root += 1
+
+    result = ""
+    result += "UAS: {}\n".format(correct_heads / sum_arcs)
+    result += "LAS: {}\n".format(correct_arcs / sum_arcs)
+    result += "UEM: {}\n".format(correct_trees / len(predicted_trees))
+    result += "ROOT: {}\n".format(correct_root / len(predicted_trees))
+    result += "Invalid Trees: {}\n".format(invalid_trees)
+    result += "Invalid Trees perc: {}\n".format(invalid_trees / len(gold_trees))
+
+    return result
 
 
 def main():
@@ -168,7 +242,7 @@ def main():
         help="Path to pickled training instances.",
     )
     parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=20)
     args = parser.parse_args()
 
     logger = logging.getLogger("Trainer")
@@ -183,6 +257,7 @@ def main():
     val_sents = parse(open(args.val_conllu, "r").read())
 
     train_trees = list(map(read_tree, train_sents))
+    val_trees = list(map(read_tree, val_sents))
     vocabulary = Vocabulary(train_sents, train_trees)
 
     dep_labels = [
@@ -214,23 +289,17 @@ def main():
         "num_transitions": len(transitions),
     }
 
-    model = FirstParser(**kwargs)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = FirstParser(**kwargs).to(device)
 
     optimizer = optim.Adam(
         model.parameters(),
-        lr=0.003,
+        lr=0.0003,
     )
     loss_func = nn.CrossEntropyLoss()
 
-    X_train = torch.tensor([x["input"] for x in train_instances])
-
-    # A little gambiarra fow now:
-    for i in range(len(train_instances)):
-        train_instances[i]["label"] = np.argmax(train_instances[i]["label"])
-        # for j in range(len(train_instances[i]["label"])):
-        # train_instances[i]["label"][j] = max(0, train_instances[i]["label"][j])
-
-    y_train = torch.tensor([x["label"] for x in train_instances])
+    X_train = torch.tensor([x["input"] for x in train_instances]).to(device)
+    y_train = torch.tensor([x["label"] for x in train_instances]).to(device)
 
     for epoch in range(args.epochs):
         print("Epoch {:} out of {:}".format(epoch + 1, args.epochs))
@@ -243,6 +312,7 @@ def main():
                 optimizer.zero_grad()
 
                 indices = permutation[i : i + args.batch_size]
+
                 batch_x, batch_y = X_train[indices], y_train[indices]
 
                 # in case you wanted a semi-full example
@@ -253,8 +323,19 @@ def main():
 
                 loss.backward()
                 optimizer.step()
-            prog.update(1)
-        print("Epoch average loss: {}".format(np.mean(epoch_loss)))
+                prog.update(1)
+        if epoch % 5 == 0:
+            model.eval()
+            with torch.no_grad():
+                predicted_trees = predict(
+                    model, val_sents, vocabulary, transitions, device
+                )
+                evaluation_report = evaluate(val_sents, predicted_trees, val_trees)
+                print("\n" + evaluation_report)
+            torch.save(model.state_dict(), "my-model-epoch-{}.torch".format(epoch))
+        print(
+            "Epoch average training loss: {}".format(epoch_loss / len(train_instances))
+        )
 
 
 if __name__ == "__main__":

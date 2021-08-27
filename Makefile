@@ -37,3 +37,9 @@ install-spacy-sm:
 
 install-spacy-lg:
 	python -m spacy download pt_core_news_lg
+
+first-parser-trainer: $(train_conllu) $(val_conllu) 
+	python -m dante_parser.parser.first_parser.trainer\
+		--train_conllu $(train_conllu)\
+		--val_conllu $(train_conllu)\
+		--log_level debug

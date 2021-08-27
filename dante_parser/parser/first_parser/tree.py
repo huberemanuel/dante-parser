@@ -51,18 +51,18 @@ class DependencyTree:
         label: str
             Label of the dependency.
         """
-        if token_idx <= 0 or token_idx > self.n:
-            raise ValueError(
-                "Dependent node at index {} not present on tree {}".format(
-                    token_idx, self.head
-                )
-            )
-        elif head_idx < 0 or head_idx > self.n:
-            raise ValueError(
-                "Head node at index {} not present on tree {}".format(
-                    head_idx, self.head
-                )
-            )
+        # if token_idx <= 0 or token_idx > self.n:
+        #     raise ValueError(
+        #         "Dependent node at index {} not present on tree {}".format(
+        #             token_idx, self.head
+        #         )
+        #     )
+        # elif head_idx < 0 or head_idx > self.n:
+        #     raise ValueError(
+        #         "Head node at index {} not present on tree {}".format(
+        #             head_idx, self.head
+        #         )
+        #     )
 
         self.head[token_idx] = head_idx
         self.label[token_idx] = label
