@@ -151,3 +151,4 @@ tags
 .vim/
 .vscode/
 *.pickle
+out/
